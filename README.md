@@ -8,10 +8,11 @@ The ultimate goal of Flatfish is to prep and load the HTML into Drupal.
 ## INSTALLATION
 Flatfish is on Rubygems, so you can just `gem install flatfish`. But if you are starting from scratch:
 
-1. We're using Ruby 1.9.3, so install that with RVM, rbenv+ruby-build, or on your own. Note there are some soft dependencies in Ruby that you should get, google or see http://goo.gl/YSvmp.
+1. We're using Ruby 2.0, it's probably easiest to use RVM, rbenv, or chruby to get set up. 
 2. At the moment, Flatfish is setup to use MySQL, so you will need to install the mysql2 gem dependencies, notably libmysqlclient-dev.
 3. Flatfish uses Nokogiri to pare the HTML, so you will also need to install its dependencies, libxslt-dev and libxml2-dev.
 4. From here you should be able to `gem install flatfish` without any issues.
+5. You may want to check your mysql config, the default max\_allowed\_packet setting is not suitable for inserting PDFs and other large blobs (128MB is a good starting point).
 
 ## NOTES
 As Flatfish scrapes the HTML over-the-wire, it can be a bit slow (say 10 minutes for 500 pages), but you can speed things up by pointing to a local copy of your site by entering a value for `local_source` in the config.yml file (see the example directory).

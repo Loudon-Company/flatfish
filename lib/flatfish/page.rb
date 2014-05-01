@@ -32,7 +32,7 @@ module Flatfish
       @cd = (@url[-1,1] == '/')? @url: @url.slice(0..@url.rindex('/'))
       @schema = schema
       @host = host
-      @local_source = config['local_source']
+      @local_source = config['local_source'].nil? ? '': config['local_source']
 
       # handle url == host, fix mangled @cd
       if @url == @host
@@ -122,9 +122,9 @@ module Flatfish
 
     #TODO replace w/ find_or_create
     def get_media(url)
-      media = Flatfish::Media.find_by_url(url)
+      media = Flatfish::Media.find_by(url: url)
       if media.nil?
-        media = Flatfish::Media.create(:url => url) do |m|
+        media = Flatfish::Media.create(url: url) do |m|
           m.contents = read_in_blob(url)
         end
       end

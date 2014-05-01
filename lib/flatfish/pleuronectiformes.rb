@@ -61,7 +61,7 @@ module Flatfish
         begin
           break if @cnt == @config['max_rows']
           @cnt += 1
-          page = @klass.find_or_create_by_url(row[0])
+          page = @klass.find_or_create_by(url: row[0])
           puts "Processing #{k}.#{page.id} with URL #{row[0]}"
           page.setup(row, @config, @schema, @host)
           page.process
