@@ -6,7 +6,7 @@ require 'getoptlong'
 def banner error_code
   puts "Flatfish scrapes HTML\n\n"
   puts "Run flatfish in a directory with a config.yml file or pass one in"
-  puts "For more information see the README or visit the repo https://github.com/drupalstaffing/flatfish\n\n"
+  puts "For more information see the README or visit the repo https://github.com/tloudon/flatfish\n\n"
   puts "Usage: flatfish myconfig.yml OR flatfish"
   puts "Options:"
   puts "-h|--help"
