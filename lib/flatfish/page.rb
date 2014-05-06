@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*- #specify UTF-8 (unicode) characters
 require_relative 'url'
+require 'webrick'
 
 module Flatfish 
 
@@ -16,7 +17,7 @@ module Flatfish
     # csv - an array w/ all of the page specific
     # config - has some key deets, where to save images, etc that the page has to know
     # schema - dynamic column headers
-    def setup(csv, config, schema, host)
+    def setup(csv, config, schema, host, accepted_domain)
       #parse the csv
       @url, @path, @title  = csv[0], csv[1], csv[2]
       @fields = []
@@ -32,6 +33,7 @@ module Flatfish
       @cd = (@url[-1,1] == '/')? @url: @url.slice(0..@url.rindex('/'))
       @schema = schema
       @host = host
+      @accepted_domain = accepted_domain
       @local_source = config['local_source'].nil? ? '': config['local_source']
 
       # handle url == host, fix mangled @cd
@@ -93,10 +95,10 @@ module Flatfish
     def update_hrefs(css_selector)
       @doc.css(css_selector + ' a').each do |a|
 
-        #TODO finalize list of supported file types 
+        #TODO make this config
         href = Flatfish::Url.absolutify(a['href'], @cd)
         valid_exts = ['.doc', '.docx', '.pdf', '.pptx', '.ppt', '.xls', '.xlsx']
-        if href =~ /#{@host}/  && valid_exts.include?(File.extname(href))
+        if href =~ /#{@accepted_domain}/  && valid_exts.include?(File.extname(href))
           media = get_media(href)
           href = "[FLATFISHmedia:#{media.id}FLATFISH]"
         end
@@ -112,21 +114,23 @@ module Flatfish
 
         # absolutify and tokenize our images
         src = Flatfish::Url.absolutify(img['src'], @cd)
-        if src =~ /#{@host}/
+        if src =~ /#{@accepted_domain}/
           # check to see if it already exists
           media = get_media(src)
+          #puts "GETTING MEDIA #{img['src']}"
           img['src'] = "[FLATFISHmedia:#{media.id}FLATFISH]"
         end
       end
     end
 
-    #TODO replace w/ find_or_create
     def get_media(url)
       media = Flatfish::Media.find_by(url: url)
       if media.nil?
         media = Flatfish::Media.create(url: url) do |m|
-          m.contents = read_in_blob(url)
+          m.value = read_in_blob(url)
+          m.destination_file = File.basename url
         end
+        puts "Saved Media #{media.id}"
       end
       media
     end 
@@ -139,7 +143,12 @@ module Flatfish
       unless @local_source.nil? || !File.exists?(file)
         blob = file.read
       else
-        blob = Flatfish::Url.open_url(URI.escape(url))
+        # quick check to prevent double encoding
+        if WEBrick::HTTPUtils.unescape(url) == url
+          blob = Flatfish::Url.open_url(WEBrick::HTTPUtils.escape(url))
+        else
+          blob = Flatfish::Url.open_url(url)
+        end
       end
       blob
     end

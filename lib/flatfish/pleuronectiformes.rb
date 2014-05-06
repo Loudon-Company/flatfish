@@ -20,6 +20,7 @@ module Flatfish
         next if v["csv"].nil?
         @csv_file = v["csv"]
         @host = v["host"]
+        @accepted_domain = v["accepted_domain"]
         create_klass(k)
         parse(k)
       end
@@ -63,7 +64,7 @@ module Flatfish
           @cnt += 1
           page = @klass.find_or_create_by(url: row[0])
           puts "Processing #{k}.#{page.id} with URL #{row[0]}"
-          page.setup(row, @config, @schema, @host)
+          page.setup(row, @config, @schema, @host, @accepted_domain)
           page.process
           page.save!
         rescue Exception => e

@@ -18,6 +18,10 @@ module Flatfish
           if e.message =~ /(Authorization Required|Unauthorized)/
             html = open(url, @creds).read
           end
+          if e.message =~ /404 Not Found/
+            puts "404 on #{url}"
+            return nil
+          end
         end
         return html
       end
