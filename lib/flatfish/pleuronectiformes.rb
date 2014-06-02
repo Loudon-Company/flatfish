@@ -69,9 +69,9 @@ module Flatfish
           page.save!
         rescue Exception => e
           if e.message =~ /(redirection forbidden|404 Not Found)/
-            ap "URL: #{page.url} #{e}"
+            puts "URL: #{page.url} #{e}"
           else
-            ap "URL: #{page.url} ERROR: #{e} BACKTRACE: #{e.backtrace}"
+            puts "URL: #{page.url} ERROR: #{e} MESSAGE: #{e.message}"
           end
         end
       end

@@ -11,7 +11,7 @@ module Flatfish
         t.string :title
       end
       schema.each do |column|
-        add_column(k, column.gsub(/\s+/, '_').downcase.to_sym, :text)
+        add_column(k, column.gsub(/\s+/, '_').downcase.to_sym, :text, limit: 16777215)
       end
     end
   end
@@ -22,6 +22,7 @@ module Flatfish
       create_table :media do |t|
         t.string :url
         t.string :destination_file
+        # options for mysql are 16mb or 4gb
         t.binary :value, :limit => 4294967295
       end
     end

@@ -1,4 +1,4 @@
-module Flatfish 
+module Flatfish
   module Url
     #methods for handling URLs
     class << self
@@ -16,18 +16,21 @@ module Flatfish
             html = open_url("https://" + redirect.host + redirect.path)
           end
           if e.message =~ /(Authorization Required|Unauthorized)/
+            return nil
+            #skipping
             html = open(url, @creds).read
           end
           if e.message =~ /404 Not Found/
             puts "404 on #{url}"
             return nil
           end
+
         end
         return html
       end
 
       # take a URL, return an absolute URL
-      def absolutify url, cd 
+      def absolutify url, cd
         url = url.to_s
         # deal w/ bad URLs, already absolute, etc
         begin
@@ -39,11 +42,14 @@ module Flatfish
 
         return url if u.absolute? # http://example.com/about
         c = URI.parse(cd)
+        # root
         return c.scheme + "://" + c.host + url if url.index('/') == 0 # /about
+        # same directory
         return cd + url if url.match(/^[a-zA-Z]+/) # about*
 
-        # only relative from here on in; ../about, ./about, ../../about
-        u_dirs = u.path.split('/')
+        # traversing directories: ../about, ./about, ../../about
+        # use .to_s not .path to support query strings
+        u_dirs = u.to_s.split('/')
         c_dirs = c.path.split('/')
 
         # move up the directory until there are no more relative paths
