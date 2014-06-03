@@ -8,6 +8,7 @@ require 'active_record'
 
 require 'flatfish/pleuronectiformes'
 require 'flatfish/page'
+require 'flatfish/link'
 require 'flatfish/media'
 require 'flatfish/create_tables'
 require 'flatfish/url'

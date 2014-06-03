@@ -90,7 +90,7 @@ module Flatfish
           
           # remove any junk
           if subtract
-            html[@schema[i][field] = ""
+            html[@schema[i][field]] = ""
           else
             html[@schema[i]] +=  field
           end
