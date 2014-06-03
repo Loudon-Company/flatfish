@@ -5,7 +5,7 @@ require "flatfish"
 Gem::Specification.new do |s|
   s.name        = 'flatfish'
   s.version     = Flatfish::VERSION
-  s.date        = '2012-10-17'
+  s.date        = '2014-06-02'
   s.summary     = "Scrape web pages!"
   s.description = "flatfish accepts a CSV of URLS with CSS selectors prepping them for insert into drupal"
   s.authors     = ["Tim Loudon", "Mike Crittenden"]
@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'nokogiri'
   s.add_dependency 'activerecord'
   s.add_dependency 'mysql2'
-  s.add_dependency 'awesome_print'
 
   s.add_development_dependency "bundler", "~> 1.3"
   s.add_development_dependency "rake"

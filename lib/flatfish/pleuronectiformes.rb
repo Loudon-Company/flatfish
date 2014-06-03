@@ -14,12 +14,13 @@ module Flatfish
 
     # main loop for flatfish
     def ingurgitate
-      create_media unless Flatfish::Media.table_exists?
+      create_helper_tables
 
       @config["types"].each do |k,v|
         next if v["csv"].nil?
         @csv_file = v["csv"]
         @host = v["host"]
+        @table = v["table"].nil? ? k.tableize : v["table"]
         @accepted_domain = v["accepted_domain"]
         create_klass(k)
         parse(k)
@@ -32,10 +33,10 @@ module Flatfish
     # create dynamic model
     def create_klass(k)
         # commence hackery
-        create_table(k) unless ActiveRecord::Base.connection.tables.include?(k.tableize)
+        create_table(k) unless ActiveRecord::Base.connection.tables.include?(@table)
         @klass = Class.new(Page)
         @klasses[k] = @klass
-        @klass.table_name = k.tableize
+        @klass.table_name = @table
     end
 
     def create_table(klass)
@@ -43,8 +44,10 @@ module Flatfish
       Flatfish::CreateKlass.setup(@schema, klass)
     end
 
-    def create_media
-      Flatfish::CreateMedia.setup
+    def create_helper_tables
+      [Flatfish::Media, Flatfish::Link].each do |klass|
+        klass.setup unless klass.table_exists?
+      end
     end
 
     #load csv, set schema
@@ -90,7 +93,7 @@ module Flatfish
         klasses.each_pair do |k,v|
           klass_attributes = Hash.new
           v.new.attributes.each { |a| klass_attributes[a[0]] = split_type(v.columns_hash[a[0]].sql_type) }
-          output["schema"].merge!({k => {"machine_name" => k.tableize, "fields" => klass_attributes, "primary key" => ["id"]}})
+          output["schema"].merge!({k => {"machine_name" => @table, "fields" => klass_attributes, "primary key" => ["id"]}})
         end
         out.write output.to_yaml
       end

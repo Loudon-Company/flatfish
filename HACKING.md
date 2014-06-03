@@ -20,6 +20,6 @@ A Flatfish object is instantiated with a YAML config file.  The YAML includes DB
 ### Odds and Ends
 Although all Active Record tables have an ID column, the URL is the unique identifier and all business logic is tied to it.
 
-If you are new to Ruby, we suggest using rbenv to download the latest MRI Ruby (1.9.3 at the moment) and manage your gems.
+If you are new to Ruby, we suggest using rbenv to download the latest MRI Ruby (2.1.2 at the moment) and manage your gems.
 
 Please write tests for any areas lacking them and certainly for any new code.  We are using Test::Unit.

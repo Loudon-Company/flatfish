@@ -4,18 +4,34 @@ db: 'flatfish_sample'
 
 # NOTE: these map to Drupal content types and AR database tables
 types:
-  Bio:
-    csv: '/home/tloudon/workspace/flatfish/example/bio.csv'
-    host: 'http://drupalconnect.com'
   Article:
     csv: '/home/tloudon/workspace/flatfish/example/article.csv'
-    host: 'http://drupalconnect.com'
+    host: 'http://loudonco.com'
+    # Example of overriding the table name--needs to match Drupal machine_name
+    #table: post
   Page:
     csv: '/home/tloudon/workspace/flatfish/example/page.csv'
-    host: 'http://drupalconnect.com'
+    host: 'http://loudonco.com'
 
-# use the web, otherwise path to local HTML root
-local_source: ''
+# These types of files will be saved as blobs in the db
+# Use the file extension including the dot '.'
+# Default whitelist
+#file_whitelist: ['.doc', '.docx', '.pdf', '.pptx', '.ppt', '.xls', '.xlsx']
+
+# All images (<img>) are assumed to be valid *except* those listed below
+# Use the file basename
+# Default blacklist
+#img_blacklist: ['spacer.gif']
+
+# Support for basic auth
+# NB: this is used globally if a URL responds with a HTTP 401 status
+# Also, individual URLs cannot use the http://user:pass@example.com format
+#basic_auth_user: "some_user"
+#basic_auth_pass: "correcthorsebatterystaple"
+
+# Defaults to use the web, but hitting the site locally can dramatically speed up
+# processing time.  Specify the path to your local copy of the site here:
+#local_source: '/home/workspace/tloudon/some_html_site'
 
 #
 development:

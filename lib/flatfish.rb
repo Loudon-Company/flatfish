@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'yaml'
 require 'csv'
 require 'open-uri'
@@ -7,15 +6,12 @@ require 'nokogiri'
 require 'fileutils'
 require 'active_record'
 
-require 'awesome_print'
-
 require 'flatfish/pleuronectiformes'
 require 'flatfish/page'
 require 'flatfish/media'
 require 'flatfish/create_tables'
 require 'flatfish/url'
 
-#API
 module Flatfish 
   class << self
     #allow alias Flatfish.new etc

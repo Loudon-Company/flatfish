@@ -35,6 +35,9 @@ module Flatfish
       @host = host
       @accepted_domain = accepted_domain
       @local_source = config['local_source'].nil? ? '': config['local_source']
+      default_exts = ['.doc', '.docx', '.pdf', '.pptx', '.ppt', '.xls', '.xlsx']
+      @file_whitelist = config['file_whitelist'].nil? ? default_exts : config['file_whitelist']
+      @img_blacklist = config['img_blacklist'].nil? ? ['spacer.gif']: config['img_blacklist']
 
       # handle url == host, fix mangled @cd
       if @url == @host
@@ -70,22 +73,38 @@ module Flatfish
       @fields.each_with_index do |selectors, i|
         next if -1 == selectors
         html[@schema[i]] = ''
+
         selectors.split('&&').each do |selector|
+          if selector[0] == '!'
+            subtract = true
+            selector = selector[1..-1]
+          end
           update_hrefs(selector)
           update_imgs(selector)
-          if @doc.css(selector).nil? then
+          if @doc.css(selector).nil?
             field = ''
           else
             # sub tokens and gnarly MS Quotes
             field = @doc.css(selector).to_s.gsub("%5BFLATFISH", '[').gsub("FLATFISH%5D", ']').gsub(/[”“]/, '"').gsub(/[‘’]/, "'")
           end
-          html[@schema[i]] +=  field
+          
+          # remove any junk
+          if subtract
+            html[@schema[i][field] = ""
+          else
+            html[@schema[i]] +=  field
+          end
+        end
+
+        # special case for menu fields
+        if selectors.is_a? Numeric
+          html[@schema[i]] = selectors
         end
       end
       @data = {
         'url' => @url,
         'title' => @title,
-        'path' => @path
+        'pathauto' => @path
       }
       @data.merge!(html)
     end
@@ -95,14 +114,13 @@ module Flatfish
     def update_hrefs(css_selector)
       @doc.css(css_selector + ' a').each do |a|
 
-        #TODO make this config
         href = Flatfish::Url.absolutify(a['href'], @cd)
-        valid_exts = ['.doc', '.docx', '.pdf', '.pptx', '.ppt', '.xls', '.xlsx']
-        if href =~ /#{@accepted_domain}/  && valid_exts.include?(File.extname(href))
+        if href =~ /#{@accepted_domain}/  && @file_whitelist.include?(File.extname(href))
           media = get_media(href)
           href = "[FLATFISHmedia:#{media.id}FLATFISH]"
         end
-        a['href'] = href
+          link = Flatfish::Link.find_or_create_by(url: href)
+          a['href'] = "[FLATFISHlink:#{link.id}FLATFISH]"
       end
     end
 
@@ -114,7 +132,7 @@ module Flatfish
 
         # absolutify and tokenize our images
         src = Flatfish::Url.absolutify(img['src'], @cd)
-        if src =~ /#{@accepted_domain}/
+        if src =~ /#{@accepted_domain}/ && ! @img_blacklist.include?(File.basename(src))
           # check to see if it already exists
           media = get_media(src)
           #puts "GETTING MEDIA #{img['src']}"
