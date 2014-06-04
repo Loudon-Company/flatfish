@@ -3,15 +3,19 @@ module Flatfish
   class CreateKlass < ActiveRecord::Migration
     # assume every klass has a URL, Path(auto), Title
     # pass in additional columns from CSV
-    def self.setup(schema, klass)
-      k = klass.tableize.to_sym
+    def self.setup(schema, table)
+      k = table.to_sym
       create_table(k) do |t|
         t.string :url
         t.string :pathauto
         t.string :title
       end
       schema.each do |column|
-        add_column(k, column.gsub(/\s+/, '_').downcase.to_sym, :text, limit: 16777215)
+        if column =~ /menu_parent|menu/
+          add_column(k, column.to_sym, :integer)
+        else
+          add_column(k, column.gsub(/\s+/, '_').downcase.to_sym, :text, limit: 16777215)
+        end
       end
     end
   end
@@ -30,7 +34,7 @@ module Flatfish
   end
 
   # a table to store all links regardless of content type
-  class CreateLinks < ActiveRecord::Migration
+  class CreateLink < ActiveRecord::Migration
     #create flatfish_links table
     def self.setup
       create_table :links do |t|

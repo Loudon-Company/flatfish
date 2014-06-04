@@ -21,7 +21,7 @@ module Flatfish
         @csv_file = v["csv"]
         @host = v["host"]
         @table = v["table"].nil? ? k.tableize : v["table"]
-        @accepted_domain = v["accepted_domain"]
+        @accepted_domain = v["accepted_domain"].nil? ? @host : v["accepted_domain"]
         create_klass(k)
         parse(k)
       end
@@ -41,13 +41,12 @@ module Flatfish
 
     def create_table(klass)
       load_csv
-      Flatfish::CreateKlass.setup(@schema, klass)
+      Flatfish::CreateKlass.setup(@schema, @table)
     end
 
     def create_helper_tables
-      [Flatfish::Media, Flatfish::Link].each do |klass|
-        klass.setup unless klass.table_exists?
-      end
+      Flatfish::CreateMedia.setup unless Flatfish::Media.table_exists?
+      Flatfish::CreateLink.setup unless Flatfish::Link.table_exists?
     end
 
     #load csv, set schema
@@ -74,7 +73,7 @@ module Flatfish
           if e.message =~ /(redirection forbidden|404 Not Found)/
             puts "URL: #{page.url} #{e}"
           else
-            puts "URL: #{page.url} ERROR: #{e} MESSAGE: #{e.message}"
+            puts "URL: #{page.url} ERROR: #{e} MESSAGE: #{e.backtrace}"
           end
         end
       end

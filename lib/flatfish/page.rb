@@ -2,7 +2,7 @@
 require_relative 'url'
 require 'webrick'
 
-module Flatfish 
+module Flatfish
 
   class Page < ActiveRecord::Base
     self.abstract_class = true
@@ -74,31 +74,33 @@ module Flatfish
         next if -1 == selectors
         html[@schema[i]] = ''
 
-        selectors.split('&&').each do |selector|
-          if selector[0] == '!'
-            subtract = true
-            selector = selector[1..-1]
-          end
-          update_hrefs(selector)
-          update_imgs(selector)
-          if @doc.css(selector).nil?
-            field = ''
-          else
-            # sub tokens and gnarly MS Quotes
-            field = @doc.css(selector).to_s.gsub("%5BFLATFISH", '[').gsub("FLATFISH%5D", ']').gsub(/[”“]/, '"').gsub(/[‘’]/, "'")
-          end
-          
-          # remove any junk
-          if subtract
-            html[@schema[i][field]] = ""
-          else
-            html[@schema[i]] +=  field
-          end
-        end
-
         # special case for menu fields
-        if selectors.is_a? Numeric
+        if selectors =~ /^\d+/
           html[@schema[i]] = selectors
+        else
+          selectors.split(' && ').each do |selector|
+            if '!' == selector[0]
+              subtract = true
+              selector = selector[1..-1]
+            end
+            update_hrefs(selector)
+            update_imgs(selector)
+            if @doc.css(selector).nil?
+              field = ''
+            else
+              # sub tokens and gnarly MS Quotes
+              field = @doc.css(selector).to_s.gsub("%5BFLATFISH", '[').gsub("FLATFISH%5D", ']').gsub(/[”“]/, '"').gsub(/[‘’]/, "'")
+            end
+
+            # Remove any junk sub elements
+            # A lot of CMSs have a standard div template and all
+            # customer-specific content is included in one massive div
+            if subtract
+              html[@schema[i]].gsub! field, ''
+            else
+              html[@schema[i]] +=  field
+            end
+          end
         end
       end
       @data = {
@@ -115,12 +117,19 @@ module Flatfish
       @doc.css(css_selector + ' a').each do |a|
 
         href = Flatfish::Url.absolutify(a['href'], @cd)
-        if href =~ /#{@accepted_domain}/  && @file_whitelist.include?(File.extname(href))
-          media = get_media(href)
-          href = "[FLATFISHmedia:#{media.id}FLATFISH]"
+
+        # Create tokens for internal links and images/files
+        if href =~ /#{@accepted_domain}/
+          # NB: the brackets will be URL encoded, so we are flagging them here and gsubbing them before saving
+          if @file_whitelist.include?(File.extname(href))
+            media = get_media(href)
+            href = "[FLATFISHmedia:#{media.id}FLATFISH]"
+          else
+            link = Flatfish::Link.find_or_create_by(url: href)
+            href = "[FLATFISHlink:#{link.id}FLATFISH]"
+          end
         end
-          link = Flatfish::Link.find_or_create_by(url: href)
-          a['href'] = "[FLATFISHlink:#{link.id}FLATFISH]"
+          a['href'] = href
       end
     end
 
@@ -151,7 +160,7 @@ module Flatfish
         puts "Saved Media #{media.id}"
       end
       media
-    end 
+    end
 
     # read in blob
     def read_in_blob(url)
