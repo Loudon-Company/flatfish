@@ -1,9 +1,9 @@
 $:.push File.expand_path("../../lib", __FILE__)
 require 'flatfish/url'
 require 'uri'
-require 'test/unit'
+require 'minitest/autorun'
 
-class URL_Tests < Test::Unit::TestCase
+class URL_Tests < Minitest::Test
 
   def setup
     @cd = "http://example.com/test_dir1/test_dir2/"
