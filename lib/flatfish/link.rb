@@ -1,5 +1,5 @@
 module Flatfish 
   class Link < ActiveRecord::Base
-    attr_reader :url
+    attr_accessor :url
   end
 end

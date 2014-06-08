@@ -20,6 +20,7 @@ module Flatfish
     def setup(csv, config, schema, host, accepted_domain)
       #parse the csv
       @url, @path, @title  = csv[0], csv[1], csv[2]
+      @url = fix_oneoff @url
       @fields = []
       csv[3..-1].each do |field|
         unless field.nil?
@@ -44,6 +45,16 @@ module Flatfish
         @cd = @url + '/'
       end
       Flatfish::Url.creds = {:http_basic_authentication => [config['basic_auth_user'], config['basic_auth_pass']]}
+    end
+
+    # standardize root urls w/ or w/o the trailing slash
+    def fix_oneoff url
+      begin
+        uri = URI.parse url
+        return ("" == uri.path) ? url + '/' : url
+      rescue
+        #puts "Ran into issue processing #{url}"
+      end
     end
 
     def process
@@ -124,7 +135,7 @@ module Flatfish
           if @file_whitelist.include?(File.extname(href))
             media = get_media(href)
             href = "[FLATFISHmedia:#{media.id}FLATFISH]"
-          else
+          elsif href !~ /mailto:/
             link = Flatfish::Link.find_or_create_by(url: href)
             href = "[FLATFISHlink:#{link.id}FLATFISH]"
           end

@@ -17,6 +17,7 @@ module Flatfish
           add_column(k, column.gsub(/\s+/, '_').downcase.to_sym, :text, limit: 16777215)
         end
       end
+      add_index table, ["url"], name: "index_#{table}_on_url", using: :btree
     end
   end
 
@@ -30,6 +31,7 @@ module Flatfish
         # options for mysql are 16mb or 4gb
         t.binary :value, :limit => 4294967295
       end
+      add_index "media", ["url"], name: "index_media_on_url", using: :btree
     end
   end
 
@@ -39,7 +41,11 @@ module Flatfish
     def self.setup
       create_table :links do |t|
         t.string :url
+        t.string :map_type
+        t.integer :map_id
       end
+      add_index "links", ["url"], name: "index_links_on_url", using: :btree
+      add_index "links", ["map_id"], name: "index_links_on_map_id", using: :btree
     end
   end
 

@@ -26,6 +26,7 @@ module Flatfish
         create_klass(k)
         parse(k)
       end
+      update_links_table
       output_schema
     end
 
@@ -80,6 +81,24 @@ module Flatfish
       end
     end
 
+    def update_links_table
+      Link.all.each do |link|
+        link_updated = false
+        @klasses.each_pair do |k,v|
+          if (origin = v.find_by(url: link[:url]))
+            link.update_attributes(:map_type => k, :map_id => origin.id)
+            link_updated = true
+            next
+          end
+        end
+
+        # set a flag since we were unable to find the migrated content
+        # this would happen if a legacy page was not migrated
+        if ! link_updated
+          link.update_attributes(:map_id => -1)
+        end
+      end
+    end
 
     # generate a dynamic schema.yml for Migrate mapping
     def output_schema
